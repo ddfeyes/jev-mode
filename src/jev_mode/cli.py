@@ -9,8 +9,7 @@ from pathlib import Path
 
 from .batch import run_batch
 from .client import JevClient, JevError, load_api_key, validate_questions
-
-__version__ = "1.0.0"
+from . import __version__
 
 
 def _read(path_or_inline, is_file):
@@ -107,6 +106,16 @@ def build_parser():
     check = sub.add_parser("check", help="verify configuration and reach the API")
     check.add_argument("--offline", action="store_true", help="skip the network call")
     check.add_argument("--model", default=None)
+
+    coverage = sub.add_parser(
+        "coverage",
+        help="count how many steps of each session and subagent actually went through Jev")
+    coverage.add_argument("--task", help="limit to one session id and its children")
+    coverage.add_argument("--day", help="limit to one day, YYYYMMDD")
+    coverage.add_argument("--sessions-root", help="override the rollout directory")
+    coverage.add_argument("--trace", help="override hook-trace.jsonl")
+    coverage.add_argument("--events-db", help="override tasks.sqlite3")
+    coverage.add_argument("--json", action="store_true", help="emit raw rows")
     return parser
 
 
@@ -157,6 +166,17 @@ def main(argv=None):
             return gate_main(["--json"] if args.json else [])
         if args.command == "check":
             return _check(args)
+        if args.command == "coverage":
+            from .coverage import main as coverage_main
+            forwarded = []
+            for flag, value in (("--task", args.task), ("--day", args.day),
+                                ("--sessions-root", args.sessions_root),
+                                ("--trace", args.trace), ("--events-db", args.events_db)):
+                if value:
+                    forwarded += [flag, value]
+            if args.json:
+                forwarded.append("--json")
+            return coverage_main(forwarded)
     except JevError as exc:
         print(f"jev-mode: {exc}", file=sys.stderr)
         return 2

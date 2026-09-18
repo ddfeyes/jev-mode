@@ -162,6 +162,45 @@ Rules that make it safe to leave on:
 Cost: one Jev call per gated step, roughly two hundredths of a cent, against a
 per-step agent context measured at ~109k tokens.
 
+### Measuring it instead of trusting it
+
+"Every step is filtered" is a claim, so `coverage` counts it. It reads the two
+records an agent host already writes - the per-session rollouts (every tool call
+and every `codex-typesafe` invocation, attributed to the session that made it)
+and the hook trace (one line per hook invocation with its session id) - and
+reports root sessions and subagents separately.
+
+```sh
+jev-mode coverage --task <session-id>
+jev-mode coverage --day 20260918
+```
+
+```
+ root: sessions=   1 steps=    389 jev=    52 (13.37%) hook_events=    501 denials=0
+child: sessions=  42 steps=   4872 jev=   250 ( 5.13%) hook_events=      0 denials=0
+  all: sessions=  43 steps=   5261 jev=   302 ( 5.74%) hook_events=    501 denials=0
+```
+
+That output is from a real session and its 42 subagents on 2026-09-18, and it is
+the reason this tool exists: the numbers are far below "every step", and the two
+reasons were both fixable-but-real.
+
+**Subagent sessions do not receive pre-action hooks.** Measured: 339 subagent
+sessions in one day, 29,146 tool calls between them, and **zero** hook
+invocations - no `PreToolUse`, no `SessionStart`, nothing. Two live probes
+launched specifically to test this, each running exactly one command, also
+produced zero hook records while the parent's own steps were being gated
+continuously in the same seconds. So a gate wired into the host's hook system
+protects the parent and **not** the children it spawns. What a child *does* get
+is the directive, injected through the spawn hook, which is why the honest
+mitigation is to keep the child's own work narrow and to check its coverage
+afterwards with `coverage`.
+
+**The retained event table cannot measure coverage.** It keeps only the newest
+200 rows per task, so a long session's early steps are deleted before you look.
+That is why `coverage` reads the append-only trace for hook counts and treats the
+event table as a floor for denials only.
+
 ## Design rules that were measured
 
 These moved accuracy by 5-12 points in testing. They are the reason this is more
@@ -223,11 +262,15 @@ instruction, not as an enforcement gate.
 - **The benchmark corpus was synthetic** (1000 messages over 72 scenario cores).
   The token ratio is the durable result; absolute accuracies will differ on your
   data, so re-measure on your own workload before trusting the headline.
+- **The host decides when hooks run, and on Codex they do not run in subagents.**
+  Measured 2026-09-18: 29,146 subagent tool calls, zero hook invocations. The
+  gate therefore covers the session you are in, not the children it spawns. Use
+  `jev-mode coverage` to see the split on your own host rather than assuming it.
 
 ## Development
 
 ```sh
-python3 -m unittest discover -s tests -v      # 32 tests, no network
+python3 -m unittest discover -s tests -v      # 66 tests, no network
 ```
 
 Every test fakes the transport, so the suite runs offline and never needs a key.

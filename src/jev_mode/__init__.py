@@ -20,7 +20,7 @@ from .batch import run_batch
 from .classify import classify, load_text_items, parse_options
 from .gate import decide as gate_decide, build_state as gate_state, step_summary
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __all__ = ["JevClient", "JevError", "run_batch", "classify", "load_text_items",
            "parse_options", "gate_decide", "gate_state", "step_summary",
            "estimate_tokens", "validate_questions"]
