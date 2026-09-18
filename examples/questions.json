@@ -1,0 +1,14 @@
+{
+  "owner": {
+    "type": "choice",
+    "instructions": "Which team owns the reporter's complaint? Decide by the reporter's main request, not by incidental words.",
+    "criteria": {
+      "billing": "their own money: charge, invoice, refund, declined card",
+      "technical": "the product itself failing: crashes, stuck saving, empty exports, API errors",
+      "account_access": "getting into, keeping or handing over access: lockout, reset link, ownership",
+      "shipping": "a physical parcel or its delivery paperwork",
+      "data_privacy": "their personal data: deletion requests, who has seen it, unagreed sharing",
+      "abuse_content": "another person's conduct: threats, harassment, spam, impersonation, fraud"
+    }
+  }
+}

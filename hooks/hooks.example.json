@@ -1,0 +1,43 @@
+{
+  "_comment": [
+    "Example wiring for an agent runtime that runs a command on session start",
+    "and on each prompt, then merges the printed JSON into the model context.",
+    "Enable it first: echo '{\"enabled\": true}' > ~/.config/jev-mode/config.json",
+    "The command prints nothing while disabled, so this is safe to install early."
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jev-mode hook",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jev-mode hook",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jev-mode hook --event SubagentStart",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

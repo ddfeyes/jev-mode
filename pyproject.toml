@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-mode"
+version = "1.0.0"
+description = "Cut agent token use by routing bulk semantic judgments to TypeSafe Jev"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "ddfeyes" }]
+keywords = ["agents", "tokens", "classification", "triage", "typesafe", "jev"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/ddfeyes/jev-mode"
+Issues = "https://github.com/ddfeyes/jev-mode/issues"
+
+[project.scripts]
+jev-mode = "jev_mode.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

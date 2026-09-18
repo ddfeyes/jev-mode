@@ -1,0 +1,29 @@
+{
+  "name": "jev-mode",
+  "version": "1.0.0",
+  "description": "Cut agent token use by routing bulk semantic judgments to TypeSafe Jev.",
+  "author": {
+    "name": "ddfeyes"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jev",
+    "typesafe",
+    "tokens",
+    "classification",
+    "triage"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Jev Mode",
+    "shortDescription": "Cut token use on bulk semantic judgments.",
+    "longDescription": "Jev Mode teaches an agent when and how to offload bulk bounded semantic judgments - classifying, routing, triaging, ranking, relevance filtering - to TypeSafe Jev, and points it at the jev-mode batch helper. Install the CLI with pip install jev-mode and set TYPESAFE_API_KEY.",
+    "developerName": "ddfeyes",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Is this list better handled by Jev?",
+      "Triage these items through Jev and show me the counts."
+    ]
+  }
+}
