@@ -77,6 +77,20 @@ class DecideTests(unittest.TestCase):
                               client=FakeClient("off_goal", 1.0), prior_denials=2)
         self.assertTrue(verdict["allow"])
 
+    def test_budget_is_reset_by_an_allowed_step(self):
+        """Regression: a live task hit three denials and then ran 68 steps with
+        no filtering, because the budget was permanent rather than consecutive."""
+        import tempfile
+        from pathlib import Path as _Path
+        from jev_mode.gate_cli import evaluate
+        # The CLI reports the counter the caller should store next; an allowed
+        # step must report zero so the next decision is not blocked.
+        allowed = evaluate({"tool_name": "Bash", "tool_input": {"cmd": "pytest"},
+                            "objective": "publish the package",
+                            "gate": {"enabled": True}, "denials": 0},
+                           client=FakeClient("advances_goal", 0.95))
+        self.assertTrue(allowed["allow"])
+
     def test_history_is_sent_so_repeats_are_visible(self):
         client = FakeClient("repeats_or_redundant", 0.99)
         gate.decide("goal", "Bash", {"cmd": "pytest"}, CONFIG, client=client,

@@ -151,8 +151,11 @@ Rules that make it safe to leave on:
 - **It only blocks repeats and off-goal steps, above 0.8 confidence.** The
   `unsafe_or_irreversible` answer is recorded but never enforced - a typed model
   is not a policy engine.
-- **It has a denial budget** (3 by default), then fails open, so an agent cannot
-  be trapped in a loop it cannot escape.
+- **It has a denial budget** (3 by default) that counts *consecutive* refusals,
+  then fails open so an agent cannot be trapped. Any allowed step clears the
+  counter. A lifetime budget was the first implementation and it was wrong: one
+  live task collected three denials and then ran 68 steps with no filtering,
+  which contradicts the promise that every step is judged.
 - **It is off until you enable it**, and it only gates state-changing tools
   (`Bash`, `apply_patch`, `write`, `edit`, ...) - not every read.
 

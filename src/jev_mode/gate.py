@@ -19,8 +19,11 @@ Design rules, all deliberate:
 - Deny only on repeat/off-goal answers above a high confidence threshold. The
   unsafe answer is recorded but never used to block: a typed model is not a
   policy engine.
-- Bounded refusals (`max_denials`). The gate stops a wrong step; it does not
-  trap an agent in a loop it cannot escape.
+- Bounded refusals (`max_denials`), but only CONSECUTIVE ones: an allowed step
+  clears the counter. The gate stops a wrong step without trapping the agent,
+  and a later step is still judged. A lifetime budget was the first
+  implementation and it was wrong - a live task collected three denials and then
+  ran 68 steps with no filtering at all.
 """
 
 from __future__ import annotations
