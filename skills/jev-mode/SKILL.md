@@ -92,3 +92,18 @@ none while the parent was being gated in the same seconds. A gate wired into the
 host hooks therefore protects the session you are in and not the children it
 spawns. Give a spawned child narrow work, require a Jev call per step, and
 verify the split afterwards with `coverage` instead of assuming it.
+
+### The spawn rule and the closing check
+
+Because a child cannot be gated after it starts, the harness enforces the
+obligation at the two points it can see. It refuses to spawn a child whose task
+does not declare `jev: per-step` (or
+`task_name contracted__scope__artifact__decision__expected_delta__jev`), and it
+refuses once to close a task whose child ran five or more steps below a 50 % Jev
+ratio, naming the offending children. Both are configurable and both fail open on
+a measurement error:
+
+```json
+"jev_gate": {"require_child_coverage": true},
+"jev_mode": {"child_min_steps": 5, "child_min_ratio": 0.5}
+```

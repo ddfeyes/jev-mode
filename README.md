@@ -201,6 +201,44 @@ afterwards with `coverage`.
 That is why `coverage` reads the append-only trace for hook counts and treats the
 event table as a floor for denials only.
 
+### Making a child agent work like its parent
+
+The measured gap above is not something a nicer paragraph fixes, so the harness
+enforces it at the only two points it can see.
+
+**A spawn is refused unless the delegation commits the child to Jev.** The child
+session runs no hooks, so it cannot be gated after it starts; the spawn is the
+last moment the harness can act. Declare the obligation in the task itself:
+
+```
+scope: ...
+artifact: ...
+decision: ...
+expected_delta: ...
+jev: per-step
+```
+
+(or use `task_name contracted__scope__artifact__decision__expected_delta__jev`).
+A spawn without it is denied, and the reason names the fix and the measurement:
+
+```
+Delegation refused: every child must work like its parent, so it must use Jev.
+The delegation carries no Jev obligation. Measured 2026-09-18: the host runs no
+hooks inside child sessions (343 children, 0 hook events), so a child's steps
+cannot be gated after it starts; the spawn is the only enforcement point. Add
+'jev: per-step' on its own line in the delegation message...
+```
+
+**Closing a task whose children worked outside Jev is refused once.** The stop
+check counts each child's steps against its Jev calls and blocks the close with
+the offending children named, then allows it so a parent cannot be trapped. Both
+checks fail open on a measurement error and are switchable:
+
+```json
+"jev_gate": {"require_child_coverage": true},
+"jev_mode": {"child_min_steps": 5, "child_min_ratio": 0.5}
+```
+
 ## Design rules that were measured
 
 These moved accuracy by 5-12 points in testing. They are the reason this is more
