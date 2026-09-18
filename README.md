@@ -122,6 +122,43 @@ See `examples/` for a runnable six-way triage.
 | `score` | which level on a rubric? | `score`, `legend`, `probabilities`, `confidence` |
 | `noul` | is this true? | `noul` (0.0-1.0) |
 
+
+## Filter every step, not just bulk batches
+
+`classify` handles a pile of items. The gate handles the agent's *steps*: wire
+`jev-mode gate` into a pre-action hook and each command, edit or spawn is judged
+against the objective before it runs. A step that repeats work already done or
+leaves the objective is refused, with the reason handed back to the agent.
+
+```sh
+echo '{"tool_name":"Bash","tool_input":{"cmd":"pip install pandas"},
+       "objective":"publish the package","gate":{"enabled":true}}' | jev-mode gate
+```
+
+```json
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny",
+ "permissionDecisionReason":"Jev judged this step 'off_goal' at confidence 0.95; ..."}}
+```
+
+Rules that make it safe to leave on:
+
+- **It fails open.** No key, no network, a slow answer, a malformed answer - the
+  step is allowed and the reason is recorded. A gate that breaks work when the
+  model is unreachable is worse than no gate.
+- **It needs the history.** The recent steps are part of the state. Verified:
+  an identical command was judged `advances_goal` on a stateless check and
+  `repeats_or_redundant` at 0.99 once the history was included.
+- **It only blocks repeats and off-goal steps, above 0.8 confidence.** The
+  `unsafe_or_irreversible` answer is recorded but never enforced - a typed model
+  is not a policy engine.
+- **It has a denial budget** (3 by default), then fails open, so an agent cannot
+  be trapped in a loop it cannot escape.
+- **It is off until you enable it**, and it only gates state-changing tools
+  (`Bash`, `apply_patch`, `write`, `edit`, ...) - not every read.
+
+Cost: one Jev call per gated step, roughly two hundredths of a cent, against a
+per-step agent context measured at ~109k tokens.
+
 ## Design rules that were measured
 
 These moved accuracy by 5-12 points in testing. They are the reason this is more

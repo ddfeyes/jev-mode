@@ -87,6 +87,23 @@ def build_parser():
     hook = sub.add_parser("hook", help="print the Jev-mode directive for a hook system")
     hook.add_argument("--event", default="UserPromptSubmit")
 
+    gate = sub.add_parser("gate", help="filter one step through Jev (reads a pre-action event on stdin)")
+    gate.add_argument("--json", action="store_true", help="print the bare verdict instead of a hook payload")
+
+    classify = sub.add_parser(
+        "classify",
+        help="classify a plain list (one line per item, or a glob of files) with one question")
+    classify.add_argument("--input", required=True,
+                          help="text file, JSONL file, or glob such as 'logs/*.txt'")
+    classify.add_argument("--question", required=True, help="the single choice question")
+    classify.add_argument("--options", required=True,
+                          help="comma-separated option=description pairs, e.g. 'yes=...,no=...'")
+    classify.add_argument("--out", required=True, help="JSONL answers, one line per item")
+    classify.add_argument("--pool", type=int, default=6)
+    classify.add_argument("--retries", type=int, default=1)
+    classify.add_argument("--model", default=None)
+    classify.add_argument("--timeout", type=float, default=120)
+
     check = sub.add_parser("check", help="verify configuration and reach the API")
     check.add_argument("--offline", action="store_true", help="skip the network call")
     check.add_argument("--model", default=None)
@@ -128,6 +145,16 @@ def main(argv=None):
             print(json.dumps({"hookSpecificOutput": {
                 "hookEventName": args.event, "additionalContext": text}}))
             return 0
+        if args.command == "classify":
+            from .classify import classify
+            summary = classify(args.input, args.question, args.options, args.out,
+                               client=JevClient(model=args.model, timeout=args.timeout),
+                               pool=args.pool, retries=args.retries)
+            print(json.dumps(summary, ensure_ascii=False, indent=2))
+            return 0
+        if args.command == "gate":
+            from .gate_cli import main as gate_main
+            return gate_main(["--json"] if args.json else [])
         if args.command == "check":
             return _check(args)
     except JevError as exc:

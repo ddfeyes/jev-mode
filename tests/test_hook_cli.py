@@ -38,7 +38,7 @@ class HookTests(unittest.TestCase):
             config.write_text(json.dumps({"enabled": True, "directive": "CUSTOM"}))
             self.assertEqual(hook.directive(env), "CUSTOM")
             config.write_text(json.dumps({"enabled": True}))
-            self.assertIn("judgments to Jev", hook.directive(env))
+            self.assertIn("JEV MODE", hook.directive(env))
 
     def test_broken_config_is_not_fatal(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -47,8 +47,12 @@ class HookTests(unittest.TestCase):
             self.assertFalse(hook.enabled({"JEV_MODE_CONFIG": str(config)}))
 
     def test_directive_stays_short_and_names_non_triggers(self):
-        self.assertLess(len(hook.DIRECTIVE), 1400)
-        self.assertIn("Non-triggers", hook.DIRECTIVE)
+        # Raised from 1400 when the directive changed from advice to an
+        # imperative with a one-command fast path. The bound still exists so the
+        # block cannot quietly grow into a long document.
+        self.assertLess(len(hook.DIRECTIVE), 2200)
+        self.assertIn("Do NOT use Jev for prose", hook.DIRECTIVE)
+        self.assertIn("MANDATORY", hook.DIRECTIVE)
 
 
 class CliTests(unittest.TestCase):
