@@ -25,12 +25,14 @@ from that measurement, not from opinion.
 ## Install
 
 ```sh
-pip install jev-mode          # or: pip install git+https://github.com/ddfeyes/jev-mode
+pip install git+https://github.com/ddfeyes/jev-mode
 export TYPESAFE_API_KEY=...   # bring your own TypeSafe key
 jev-mode check                # verifies config and reaches the API
 ```
 
-No dependencies: Python 3.8+ and the standard library only. Without `pip`:
+Not published on PyPI yet, so plain `pip install jev-mode` will not work. No
+dependencies either way: Python 3.8+ and the standard library only. Without
+`pip` at all:
 
 ```sh
 git clone https://github.com/ddfeyes/jev-mode
