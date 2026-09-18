@@ -22,6 +22,36 @@ Measured on 1000 triage judgments against a Jev-free control on the same task:
 Jev's own cost for that run was about four cents. The design rules below come
 from that measurement, not from opinion.
 
+## Why I built this
+
+I run coding agents all day, and I kept watching them spend whole context
+windows on decisions that aren't hard. Triage 400 support messages. Tag 600
+files as stale or current. Decide which of six teams owns a ticket. None of
+those judgments need a frontier model, and none of them need to sit in the
+context window being re-read on every later turn - but that is exactly what
+happens, and you keep paying for it on every request afterwards.
+
+I had a typed-judgment model available (Jev) that answers from a fixed option
+set with a confidence, and it costs almost nothing per call. So the obvious
+question was whether I could move the judgments there without the answers
+getting worse. I didn't trust my intuition on that, so I measured it instead:
+two agents, same task, same model, same rubric, one doing the work itself and
+one routing every verdict through Jev.
+
+The result surprised me in both directions. The token saving was bigger than I
+expected - 78 % fewer tokens, 16x less work-attributable input - and the
+accuracy was not worse, it came out slightly better (96.1 % against 93.7 %).
+The part I got wrong first was the question design: my initial version lost 5.3
+points of accuracy, and fixing it took several rounds of measuring different
+question shapes. Those findings are the section further down, and they matter
+more than the wrapper code does.
+
+Two things I want to be straight about, because they are easy to oversell. The
+control arm was not a weak baseline - across repeated runs it scored anywhere
+from 93.4 % to 98.2 %, so the honest claim is parity, not superiority. And the
+benchmark corpus was synthetic, so treat the token ratio as the durable result
+and re-measure the accuracy on your own data.
+
 ## Install
 
 ```sh
